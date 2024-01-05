@@ -1,225 +1,79 @@
+##
+# The config folder has the following structure:
+# ~/.config/pynotes/
+#    config.json
+#    profiles/
+#       profile1.json
+#       profile2.json
+#       ...
+#
+# The main config file is a config.json file which contains configuration about the
+# client application, such as the font and text size, as well as the contents of the
+# debug screen or custom macros and the default profiles for light, dark and high
+# contrast themes.
+#
+# The profiles/ folder contains a set of *.json file, one for each profile. Profiles
+# are used by note files and contain information such as the set of pen profiles (colour,
+# width and transparency for each pen) and the page style (size, background colour).
+#
+# FileReader is the class that handles all of the operations involving reading from
+# and writing to files, both config files and note files.
+##
+
+import pathlib
+import os
+import shutil
+import json
+
 class FileReader:
-    def read_note_file(filename: str):
-        obj = {
-            "profile": {
-                "name": "default",
-                "page_width": 1280,
-                "page_height": 720,
-                "background_color": "#FFFFFF",
-                "pen_profiles": [
-                    {
-                        "color": "#000000",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#FF0000",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#0000FF",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#FF00FF",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#FFFF00",
-                        "width": 10,
-                        "alpha": 0.3
-                    },
-                    {
-                        "color": "#00FF00",
-                        "width": 10,
-                        "alpha": 0.3
-                    },
-                    {
-                        "color": "#00FFFF",
-                        "width": 10,
-                        "alpha": 0.3
-                    },
-                    {
-                        "color": "#FF00FF",
-                        "width": 10,
-                        "alpha": 1.0
-                    }
-                ]
-            },
-            "session": {
-                "page": 0,
-                "x_offset": 0,
-                "y_offset": 0
-            },
-            "pages" : [
-                {
-                    "tags": [],
-                    "strokes": [ {
-                            "pen": 0,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 0,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 1,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 1,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "tags": [],
-                    "strokes": [ {
-                            "pen": 0,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 0,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 1,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 1,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "tags": [],
-                    "strokes": [ {
-                            "pen": 0,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 0,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 1,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }, {
-                            "pen": 1,
-                            "points": [
-                                [10, 10], [10, 20], [20, 30], [100, 30]
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-        return obj
+    user_config = os.path.join(str(pathlib.Path.home()), '.config/pynotes/config.json')
+    default_config = os.path.join(os.getcwd(), 'default.json')
+    default_pynotes = os.path.join(os.getcwd(), 'default.pynotes')
 
-    def read_config_file(filename: str):
-        obj = {
-            "client": {
-                "display_width": 1200,
-                "display_height": 800,
-                "light_profile": "default_light",
-                "dark_profile" : "default_dark",
-                "contrast_profile": "default_contrast",
-                "keybinds": {
-                    "pan_left" : ["H"],
-                    "pan_down" : ["J"],
-                    "pan_up" : ["K"],
-                    "pan_right": ["L"],
-                    "select_tool": ["S"],
-                    "pen_tool": ["P"],
-                    "move_tool": ["M"],
-                    "text_tool": ["T"],
-                    "shape_tool" : ["A"],
-                    "next_page": ["CTRL\\+L"],
-                    "prev_page": ["CTRL\\+P"], 
-                    "select_pen_0": ["1"],
-                    "select_pen_1": ["2"],
-                    "select_pen_2": ["3"],
-                    "select_pen_3": ["4"],
-                    "select_pen_4": ["5"],
-                    "select_pen_5": ["6"],
-                    "select_pen_6": ["7"],
-                    "select_pen_7": ["8"],
-                    "select_pen_8": ["9"],
-                    "select_pen_9": ["0"],
-                    "undo": ["CTRL\\+Z"],
-                    "redo": ["CTRL\\+Y"],
-                    "save": ["CTRL\\+S"],
-                    "exit": ["CTRL\\+Q"],
-                    "show_debug_screen": ["TAB"]
-                }
-            },
-            "default_profile": {
-                "page_width": 1280,
-                "page_height": 720,
-                "background_color": "#fbfcef",
-                "pen_profiles": [
-                    {
-                        "color": "#000000",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#FF0000",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#0000FF",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#FF00FF",
-                        "width": 2,
-                        "alpha": 1.0
-                    },
-                    {
-                        "color": "#FFFF00",
-                        "width": 10,
-                        "alpha": 0.3
-                    },
-                    {
-                        "color": "#00FF00",
-                        "width": 10,
-                        "alpha": 0.3
-                    },
-                    {
-                        "color": "#00FFFF",
-                        "width": 10,
-                        "alpha": 0.3
-                    },
-                    {
-                        "color": "#FF00FF",
-                        "width": 10,
-                        "alpha": 1.0
-                    }
-                ]
-            }
-        }
-        return obj
+    def read_note_file(filepath: str):
+        # try opening the given note file
+        try:
+            return FileReader.decode_file(filepath)
+        except:
+            # if this file can't be loaded create an empty one
+            print(f'no user config file found, initialising from default config file and loading...')
+            return FileReader.decode_file(FileReader.default_pynotes)
 
+    def read_config_file(filepath: str):
+        # try opening the given config file
+        try:
+            return FileReader.decode_file(filepath)
+        except:
+            # if this file can't be loaded try the user config file
+            if (os.path.exists(FileReader.user_config)):
+                try:
+                    print(f'trying to load user config file: {FileReader.user_config}')
+                    return FileReader.decode_file(FileReader.user_config)
+                # if the user config can't be lodaded, load the default config
+                except:
+                    print(f'loading default config file: {FileReader.user_config}')
+                    return FileReader.decode_file(FileReader.default_config)
+            # if the user config file doesn't exist create it and load it
+            else:
+                # this has to work, otherwise will throw an exception
+                print(f'no user config file found, initialising from default config file and loading...')
+                path = os.path.join(str(pathlib.Path.home()), '.config/pynotes/')
+                os.makedirs(path)
+                shutil.copy(FileReader.default_config, FileReader.user_config)
+                return FileReader.decode_file(FileReader.user_config)
+    
+    def decode_file(filepath: str):
+        with open(filepath, 'r') as f:
+            text = f.read()
+            f.close()
+            decoder = json.JSONDecoder()
+            object = decoder.decode(text)
+            print(f'decoded object: {object} from file {filepath}')
+            return object
 
+    def write_to_note_file(filepath: str, file_obj):
+        file_content = json.dumps(file_obj, indent=4)
+        with open(filepath, 'w') as f:
+            f.write(file_content)
+            f.close()
 

@@ -1,0 +1,61 @@
+{
+    "profile": {
+        "name": "default",
+        "page_width": 1280,
+        "page_height": 720,
+        "background_color": "#FFFFFF",
+        "pen_profiles": [
+            {
+                "color": "#000000",
+                "width": 2,
+                "alpha": 1.0
+            },
+            {
+                "color": "#FF0000",
+                "width": 2,
+                "alpha": 1.0
+            },
+            {
+                "color": "#0000FF",
+                "width": 2,
+                "alpha": 1.0
+            },
+            {
+                "color": "#FF00FF",
+                "width": 2,
+                "alpha": 1.0
+            },
+            {
+                "color": "#FFFF00",
+                "width": 10,
+                "alpha": 0.3
+            },
+            {
+                "color": "#00FF00",
+                "width": 10,
+                "alpha": 0.3
+            },
+            {
+                "color": "#00FFFF",
+                "width": 10,
+                "alpha": 0.3
+            },
+            {
+                "color": "#FF00FF",
+                "width": 10,
+                "alpha": 1.0
+            }
+        ]
+    },
+    "session": {
+        "page": 0,
+        "x_offset": 0,
+        "y_offset": 0
+    },
+    "pages" : [
+        {
+            "tags": [],
+            "strokes": []
+        }
+    ]
+}

@@ -6,11 +6,12 @@ class Window:
     def __init__(self) -> None:
         pygame.init()
         # read note file
-        # TODO: actually read a file
-        self.file_object = FileReader.read_note_file('')
+        # TODO: get filename from command line args (but default to user config)
+        self.opened_file_path = '/home/stefano/code/python/pynotes/project/testfiles/note.pynotes'
+        self.file_object = FileReader.read_note_file(self.opened_file_path)
         # read config file
-        # TODO: actually read a file
-        self.config = FileReader.read_config_file('')
+        # TODO: get filename from command line args or from opening a pynotes file from os gui
+        self.config = FileReader.read_config_file(FileReader.user_config)
         self.surface = pygame.display.set_mode((
             self.config['client']['display_width'],
             self.config['client']['display_height']
@@ -34,6 +35,7 @@ class Window:
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    # TODO: handle file saving
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     print('mouse down')
@@ -71,6 +73,11 @@ class Window:
                 self.frame = (self.frame+1) % self.record_interval
 
             self.clock.tick(self.FPS)
+        
+        # saving file when closing
+        print('saving...')
+        if self.opened_file_path != '':
+            FileReader.write_to_note_file(self.opened_file_path, self.file_object)
     
     def render(self):
         print('rendering page...')
