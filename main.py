@@ -1,6 +1,8 @@
 import pygame
+import array
 
 from FileReader import FileReader
+from Renderer import Renderer
 
 class Window:
     def __init__(self) -> None:
@@ -12,21 +14,24 @@ class Window:
         # read config file
         # TODO: get filename from command line args or from opening a pynotes file from os gui
         self.config = FileReader.read_config_file(FileReader.user_config)
-        self.surface = pygame.display.set_mode((
-            self.config['client']['display_width'],
-            self.config['client']['display_height']
-        ))
+
+        # some aliases for commonly used variables
+        self.current_page = self.file_object['pages'][self.file_object['session']['page']]
+        self.pen_profiles = self.file_object['profile']['pen_profiles']
+        self.width, self.height = self.config['client']['display_width'], self.config['client']['display_height']
+
+        self.surface = pygame.display.set_mode((self.width, self.height))
+        self.surface_buffer = array.array('B', [0]*self.width*self.height*4)
+
         self.current_pen = 0
         # 60 fps should probably remain constant
         self.FPS = 60
         # every how many frames a point should get recorded should also be constant but we'll see
-        self.record_interval = 20
+        self.record_interval = 3
         self.clock = pygame.time.Clock()
         self.frame = 0
         self.running = False
-
-        # some aliases for commonly used variables
-        self.current_page = self.file_object['pages'][self.file_object['session']['page']]
+        self.renderer = Renderer(self.surface_buffer, self.width, self.height)
     
     def run(self):
         running = True
@@ -72,6 +77,7 @@ class Window:
                     need_velo = 0
                 self.frame = (self.frame+1) % self.record_interval
 
+            self.render()
             self.clock.tick(self.FPS)
         
         # saving file when closing
@@ -81,6 +87,13 @@ class Window:
     
     def render(self):
         print('rendering page...')
+        self.surface.fill('#FFFFFF')
+        for stroke in self.current_page['strokes']:
+            self.renderer.render_stroke(stroke['points'], self.pen_profiles[stroke['pen']])
+        
+        from_cairo = pygame.image.fromstring(self.surface_buffer.tobytes(), (self.width, self.height), 'BGRA')
+        self.surface.blit(from_cairo, (0, 0))
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
