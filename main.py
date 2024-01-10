@@ -65,16 +65,20 @@ class Window:
             # RECORD VELOCITY POINT FIRST (EVEN IF NOT RECORDING TO GUARANTEE THAT EVERY POSITION POINT
             # GETS A RESPECTIVE VELOCITY POINT)
             if need_velo:
-                print('recording velocity...')
-                self.current_page['strokes'][-1]['points'].append((
-                    pygame.mouse.get_pos()[0] - self.current_page['strokes'][-1]['points'][-1][0]*self.FPS/self.record_interval,
-                    pygame.mouse.get_pos()[1] - self.current_page['strokes'][-1]['points'][-1][1]*self.FPS/self.record_interval
-                ))
+                mouse_pos = pygame.mouse.get_pos()
+                prev_pos = self.current_page['strokes'][-1]['points'][-1]
+                # not sure why you need the 0.05 factor but sure i'll have it
+                velo = (
+                    (mouse_pos[0] - prev_pos[0])*self.FPS*0.05,
+                    (mouse_pos[1] - prev_pos[1])*self.FPS*0.05
+                )
+                print(f'recording velocity... {velo} from current {mouse_pos} and previous {prev_pos}')
+                self.current_page['strokes'][-1]['points'].append(velo)
                 need_velo = False
 
             if recording:
                 if self.frame == 0:
-                    print('recording position...')
+                    print(f'recording position... {pygame.mouse.get_pos()}')
                     self.current_page['strokes'][-1]['points'].append(pygame.mouse.get_pos())
                     need_velo = True
                 self.frame = (self.frame+1) % self.record_interval
