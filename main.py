@@ -3,6 +3,7 @@ import array
 
 from FileReader import FileReader
 from Renderer import Renderer
+from KeyHandler import KeyHandler
 
 class Window:
     def __init__(self) -> None:
@@ -32,6 +33,9 @@ class Window:
         self.frame = 0
         self.running = False
         self.renderer = Renderer(self.surface_buffer, self.width, self.height)
+
+        # set keybinds table for keybinds
+        self.key_handler = KeyHandler(self.config['client']['keybinds'])
     
     def run(self):
         running = True
@@ -60,7 +64,12 @@ class Window:
                     print(self.current_page['strokes'][-1])
                 
                 elif event.type == pygame.KEYDOWN:
-                    print('key down')
+                    operation = self.key_handler.get_key_operation(event.key, pygame.key.get_pressed())
+                    print(f'operation is: {operation}')
+                    for pen_number in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+                        if operation == f'select_pen_{pen_number}':
+                            self.current_pen = (pen_number-1) % 10
+                    
             
             # RECORD VELOCITY POINT FIRST (EVEN IF NOT RECORDING TO GUARANTEE THAT EVERY POSITION POINT
             # GETS A RESPECTIVE VELOCITY POINT)
