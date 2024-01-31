@@ -76,7 +76,7 @@ class Window:
                         need_velo = True
                     
                 elif event.type == pygame.KEYDOWN:
-                    operation = self.key_handler.get_key_operation(event.key, pygame.key.get_pressed())
+                    operation = self.key_handler.get_key_operation(event.key, pygame.key.get_mods())
                     print(f'operation is: {operation}')
                     for pen_number in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
                         if operation == f'select_pen_{pen_number}':
