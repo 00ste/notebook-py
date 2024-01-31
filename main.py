@@ -1,18 +1,18 @@
 import pygame
+import sys
+import os
 
 from FileReader import FileReader
 from Renderer import Renderer
 from KeyHandler import KeyHandler
 
 class Window:
-    def __init__(self) -> None:
+    def __init__(self, opened_file_path) -> None:
         pygame.init()
         # read note file
-        # TODO: get filename from command line args (but default to user config)
-        self.opened_file_path = '/home/stefano/code/python/pynotes/testfiles/note.pynotes'
+        self.opened_file_path = opened_file_path
         self.file_object = FileReader.read_note_file(self.opened_file_path)
         # read config file
-        # TODO: get filename from command line args or from opening a pynotes file from os gui
         self.config = FileReader.read_config_file(FileReader.user_config)
 
         # some aliases for commonly used variables
@@ -54,6 +54,8 @@ class Window:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     print('mouse down')
+                    pygame.display.set_caption(title=f'*{self.opened_file_path.split("/")[-1]} - pynotes')
+
                     # START RECORDING STROKE
                     # create an empty stroke in the current
                     recording = True
@@ -94,16 +96,12 @@ class Window:
                     # PANNING
                     if operation == 'pan_left':
                         self.pan_x = min(max(self.pan_x + self.pad_step, self.width - self.scale*self.page_width - self.padding), self.padding)
-                        print(f'pan is ({self.pan_x}, {self.pan_y})')
                     elif operation == 'pan_right':
                         self.pan_x = min(max(self.pan_x - self.pad_step, self.width - self.scale*self.page_width - self.padding), self.padding)
-                        print(f'pan is ({self.pan_x}, {self.pan_y})')
                     elif operation == 'pan_up':
                         self.pan_y = min(max(self.pan_y + self.pad_step, self.height - self.scale*self.page_height - self.padding), self.padding)
-                        print(f'pan is ({self.pan_x}, {self.pan_y})')
                     elif operation == 'pan_down':
                         self.pan_y = min(max(self.pan_y - self.pad_step, self.height - self.scale*self.page_height - self.padding), self.padding)
-                        print(f'pan is ({self.pan_x}, {self.pan_y})')
                     
                     # UNDO
                     elif operation == 'undo':
@@ -112,15 +110,19 @@ class Window:
                                 self.file_object['session']['page'],
                                 self.current_page['strokes'].pop()
                             ))
+                            pygame.display.set_caption(title=f'*{self.opened_file_path.split("/")[-1]} - pynotes')
 
                     # REDO
                     elif operation == 'redo':
                         if len(self.deleted_strokes) > 0:
                             stroke = self.deleted_strokes.pop()
                             self.file_object['pages'][stroke[0]]['strokes'].append(stroke[1])
+                            pygame.display.set_caption(title=f'*{self.opened_file_path.split("/")[-1]} - pynotes')
 
                     # GO TO PREVIOUS PAGE
                     elif operation == 'prev_page':
+                        pygame.display.set_caption(title=f'*{self.opened_file_path.split("/")[-1]} - pynotes')
+                        
                         # remove current page if empty
                         if len(self.current_page['strokes']) == 0:
                             self.file_object['pages'].pop()
@@ -133,6 +135,8 @@ class Window:
                     
                     # GO TO NEXT PAGE
                     elif operation == 'next_page':
+                        pygame.display.set_caption(title=f'*{self.opened_file_path.split("/")[-1]} - pynotes')
+
                         # update current page number
                         self.file_object['session']['page'] += 1
 
@@ -145,7 +149,13 @@ class Window:
                         
                         # update current page alias
                         self.current_page = self.file_object['pages'][self.file_object['session']['page']]
-                                
+
+                    elif operation == 'save':
+                        pygame.display.set_caption(title=f'{self.opened_file_path.split("/")[-1]} - pynotes')
+                        print('saving...')
+                        if self.opened_file_path != '':
+                            FileReader.write_to_note_file(self.opened_file_path, self.file_object)   
+                     
             # RECORD VELOCITY POINT FIRST (EVEN IF NOT RECORDING TO GUARANTEE THAT EVERY POSITION POINT
             # GETS A RESPECTIVE VELOCITY POINT)
             if need_velo:
@@ -172,11 +182,6 @@ class Window:
                 (self.page_width, self.page_height), self.pan_x, self.pan_y, self.scale), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.FPS)
-        
-        # saving file when closing
-        print('saving...')
-        if self.opened_file_path != '':
-            FileReader.write_to_note_file(self.opened_file_path, self.file_object)
     
     '''
     def render(self):
@@ -191,5 +196,8 @@ class Window:
     '''
 
 if __name__ == '__main__':
-    w = Window()
+    if len(sys.argv) < 2:
+        print('Please specify a file path to open or create!')
+        exit(1)
+    w = Window(os.path.join(os.getcwd(), sys.argv[1]))
     w.run()

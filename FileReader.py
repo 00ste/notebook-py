@@ -27,8 +27,8 @@ import json
 
 class FileReader:
     user_config = os.path.join(str(pathlib.Path.home()), '.config/pynotes/config.json')
-    default_config = os.path.join(os.getcwd(), 'default.json')
-    default_pynotes = os.path.join(os.getcwd(), 'default.pynotes')
+    default_config = os.path.join(os.getcwd(), '.config/pynotes/default.json')
+    default_pynotes = os.path.join(os.getcwd(), '.config/pynotes/default.pynotes')
 
     def read_note_file(filepath: str):
         # try opening the given note file
@@ -37,7 +37,9 @@ class FileReader:
         except:
             # if this file can't be loaded create an empty one
             print(f'no user config file found, initialising from default config file and loading...')
-            return FileReader.decode_file(FileReader.default_pynotes)
+            print(f'trying to copy {FileReader.default_pynotes} to {filepath}')
+            shutil.copy(FileReader.default_pynotes, filepath)
+            return FileReader.decode_file(filepath)
 
     def read_config_file(filepath: str):
         # try opening the given config file
@@ -68,7 +70,6 @@ class FileReader:
             f.close()
             decoder = json.JSONDecoder()
             object = decoder.decode(text)
-            print(f'decoded object: {object} from file {filepath}')
             return object
 
     def write_to_note_file(filepath: str, file_obj):
