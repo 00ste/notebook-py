@@ -27,6 +27,7 @@ class Window:
         self.pad_step = 180
 
         self.surface = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption(title=f'{self.opened_file_path.split("/")[-1]} - pynotes')
 
         self.current_pen = 0
         # 60 fps should probably remain constant
@@ -37,6 +38,7 @@ class Window:
         self.frame = 0
         self.running = False
         self.renderer = Renderer(self.width, self.height, self.padding)
+        self.deleted_strokes = []
 
         # set keybinds table for keybinds
         self.key_handler = KeyHandler(self.config['client']['keybinds'])
@@ -76,8 +78,11 @@ class Window:
                         need_velo = True
                     
                 elif event.type == pygame.KEYDOWN:
+                    # get operation code
                     operation = self.key_handler.get_key_operation(event.key, pygame.key.get_mods())
                     print(f'operation is: {operation}')
+
+                    # CHANGE PEN
                     for pen_number in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
                         if operation == f'select_pen_{pen_number}':
                             if pen_number < len(self.file_object['profile']['pen_profiles']):
@@ -85,7 +90,8 @@ class Window:
                                 print(f'current pen: {self.current_pen}')
                             else:
                                 print(f'pen {pen_number} does not exist')
-                    # panning (with bounds)
+                    
+                    # PANNING
                     if operation == 'pan_left':
                         self.pan_x = min(max(self.pan_x + self.pad_step, self.width - self.scale*self.page_width - self.padding), self.padding)
                         print(f'pan is ({self.pan_x}, {self.pan_y})')
@@ -98,7 +104,48 @@ class Window:
                     elif operation == 'pan_down':
                         self.pan_y = min(max(self.pan_y - self.pad_step, self.height - self.scale*self.page_height - self.padding), self.padding)
                         print(f'pan is ({self.pan_x}, {self.pan_y})')
-            
+                    
+                    # UNDO
+                    elif operation == 'undo':
+                        if len(self.current_page['strokes']) > 0:
+                            self.deleted_strokes.append((
+                                self.file_object['session']['page'],
+                                self.current_page['strokes'].pop()
+                            ))
+
+                    # REDO
+                    elif operation == 'redo':
+                        if len(self.deleted_strokes) > 0:
+                            stroke = self.deleted_strokes.pop()
+                            self.file_object['pages'][stroke[0]]['strokes'].append(stroke[1])
+
+                    # GO TO PREVIOUS PAGE
+                    elif operation == 'prev_page':
+                        # remove current page if empty
+                        if len(self.current_page['strokes']) == 0:
+                            self.file_object['pages'].pop()
+
+                        # update current page number
+                        self.file_object['session']['page'] = max(0, self.file_object['session']['page']-1)
+
+                        # update current page alias
+                        self.current_page = self.file_object['pages'][self.file_object['session']['page']]
+                    
+                    # GO TO NEXT PAGE
+                    elif operation == 'next_page':
+                        # update current page number
+                        self.file_object['session']['page'] += 1
+
+                        # create new empty page if necessary
+                        if len(self.file_object['pages']) <= self.file_object['session']['page']:
+                            self.file_object['pages'].append({
+                                    "tags": [],
+                                    "strokes":  []
+                                })
+                        
+                        # update current page alias
+                        self.current_page = self.file_object['pages'][self.file_object['session']['page']]
+                                
             # RECORD VELOCITY POINT FIRST (EVEN IF NOT RECORDING TO GUARANTEE THAT EVERY POSITION POINT
             # GETS A RESPECTIVE VELOCITY POINT)
             if need_velo:
