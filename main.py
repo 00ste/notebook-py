@@ -65,7 +65,16 @@ class Window:
                     # END RECORDING STROKE
                     self.frame = 0
                     recording = False
-                
+
+                    # always record last point
+                    if not need_velo:
+                        mouse_pos = pygame.mouse.get_pos()
+                        self.current_page['strokes'][-1]['points'].append((
+                            mouse_pos[0] - self.pan_x,
+                            mouse_pos[1] - self.pan_y
+                            ))
+                        need_velo = True
+                    
                 elif event.type == pygame.KEYDOWN:
                     operation = self.key_handler.get_key_operation(event.key, pygame.key.get_pressed())
                     print(f'operation is: {operation}')
