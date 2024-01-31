@@ -27,8 +27,8 @@ import json
 
 class FileReader:
     user_config = os.path.join(str(pathlib.Path.home()), '.config/pynotes/config.json')
-    default_config = os.path.join(os.getcwd(), '.config/pynotes/default.json')
-    default_pynotes = os.path.join(os.getcwd(), '.config/pynotes/default.pynotes')
+    default_config = os.path.join(str(pathlib.Path.home()), '.config/pynotes/default.json')
+    default_pynotes = os.path.join(str(pathlib.Path.home()), '.config/pynotes/default.pynotes')
 
     def read_note_file(filepath: str):
         # try opening the given note file
