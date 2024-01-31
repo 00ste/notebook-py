@@ -24,6 +24,5 @@ class KeyHandler:
 
         # look for the operation in the keybinds table that uses that key combination
         for operation in self.keybinds_table.keys():
-            print(f'key associated with {operation} is {self.keybinds_table[operation]}')
             if shortcut_string in self.keybinds_table[operation]:
                 return operation
