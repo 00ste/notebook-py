@@ -3,8 +3,6 @@ import cairo
 import math
 import array
 
-import time
-
 class Renderer:
     def __init__(self, width, height, padding) -> None:
         self.width, self.height = width, height
@@ -13,8 +11,24 @@ class Renderer:
         self.screen_surface = cairo.ImageSurface.create_for_data(self.data_buffer,
             cairo.FORMAT_ARGB32, self.width, self.height)
 
-    def set_brush(context: cairo.Context, rgb_color, line_width):
+    def hex_to_rgb(hex_color: str):
+        if hex_color[0] != '#':
+            return hex_color
+        r = int(hex_color[1]+hex_color[2], 16)/255
+        g = int(hex_color[3]+hex_color[4], 16)/255
+        b = int(hex_color[5]+hex_color[6], 16)/255
+
+        return (r, g, b)
+
+    def fill_surface(context: cairo.Context, dimensions, color):
+        rgb_color = Renderer.hex_to_rgb(color)
         context.set_source_rgb(rgb_color[0], rgb_color[1], rgb_color[2])
+        context.rectangle(0, 0, dimensions[0], dimensions[1])
+        context.fill()
+
+    def set_brush(context: cairo.Context, color, line_width, alpha):
+        rgb_color = Renderer.hex_to_rgb(color)
+        context.set_source_rgba(rgb_color[0], rgb_color[1], rgb_color[2], alpha)
         context.set_line_width(line_width)
     
     def draw_line(context: cairo.Context, start_point, end_point):
@@ -46,24 +60,24 @@ class Renderer:
             context.rel_line_to(length*vector[0]/norm, length*vector[1]/norm)
             context.stroke()
 
-    def render_stroke(self, context, stroke_points, pen):
+    def render_stroke(self, context, stroke_points, color, width, alpha, scale):
         n_points = math.floor(len(stroke_points) / 2)
         positions = [stroke_points[2*k] for k in range(n_points)]
         velocities = [stroke_points[2*k+1] for k in range(n_points)]
 
         '''
         # DEBUG: draw line segments
-        Renderer.set_brush(context, (0.0, 1.0, 0.0), 1.00)
+        Renderer.set_brush(context, (0.0, 1.0, 0.0), 1.0, 1.0)
         for k in range(n_points-1):
             Renderer.draw_line(context, positions[k], positions[k+1])
         
         # DEBUG: draw vectors
-        Renderer.set_brush(context, (1.0, 0.0, 0.0), 2.00)
+        Renderer.set_brush(context, (1.0, 0.0, 0.0), 2.0. 1.0)
         for k in range(n_points):
             Renderer.draw_vector(context, positions[k], velocities[k], 20)
         '''
         # draw smooth splines
-        Renderer.set_brush(context, (0.0, 0.0, 0.0), 1.00)
+        Renderer.set_brush(context, Renderer.hex_to_rgb(color), width*scale, alpha)
         for k in range(n_points-1):
             Renderer.draw_spline(context,
                 positions[k],
@@ -72,27 +86,15 @@ class Renderer:
                 velocities[k+1]
             )
     
-    def render_page(self, strokes, page_dimensions, pan_x, pan_y, scale):
-        '''
-        # create screen surface
-        screen_surface = pygame.Surface((self.width, self.height))
-        screen_surface.fill((192, 192, 192)) # TODO: REPLACE WITH CLIENT BACKGROUND COLOUR VARIABLE DEFINED SOMEWHERE
-        
-        # create page buffer
-        page_width_onscreen = min(page_dimensions[0], self.width-pan_x)
-        page_height_onscreen = min(page_dimensions[1], self.height-pan_y)
-        page_buffer = array.array('B', [0] * page_width_onscreen * page_height_onscreen * 4)
-        
-        # create page surface (cairo)
-        page_surface = cairo.ImageSurface.create_for_data(page_buffer, cairo.FORMAT_ARGB32,
-            page_width_onscreen, page_height_onscreen)
-        page_context = cairo.Context(page_surface)
-        '''
+    def render_page(self, strokes, profile, page_dimensions, pan_x, pan_y, scale):
         # reset screen surface
         screen_context = cairo.Context(self.screen_surface)
-        screen_context.set_source_rgb(0.8, 0.8, 0.8)
+        Renderer.fill_surface(screen_context, (self.width, self.height), (0.4, 0.4, 0.4))
+        '''
+        screen_context.set_source_rgb(0, 0, 0)
         screen_context.rectangle(0, 0, self.width, self.height)
         screen_context.fill()
+        '''
         
         # create page surface
         page_width_onscreen = page_dimensions[0]
@@ -103,18 +105,24 @@ class Renderer:
         page_context = cairo.Context(page_surface)
 
         # draw page background
+        Renderer.fill_surface(page_context, (page_width_onscreen, page_height_onscreen),
+            profile['background_color'])
+        '''
         screen_context.set_source_rgb(1.0, 1.0, 1.0) # TODO: REPLACE WITH PAGE COLOUR VARIABLE FROM THE FILE
         screen_context.rectangle(0, 0, page_width_onscreen, page_height_onscreen)
         screen_context.fill()
-
+        '''
         # stroke rendering
         for stroke in strokes:
             pen = stroke['pen']
+            color = profile['pen_profiles'][pen]['color']
+            width = profile['pen_profiles'][pen]['width']
+            alpha = profile['pen_profiles'][pen]['alpha']
             # transform all points with scaling, panning will happen later
             points = [(scale*point[0], scale*point[1]) for point in stroke['points']]
             for point in points:
                 if 0 < point[0] < self.width and 0 < point[1] < self.height:
-                    self.render_stroke(page_context, points, pen)
+                    self.render_stroke(page_context, points, color, width, alpha, scale)
                     break
         screen_context.set_source_surface(page_surface, pan_x, pan_y)
         screen_context.paint()

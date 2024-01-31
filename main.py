@@ -1,6 +1,4 @@
 import pygame
-import array
-import time
 
 from FileReader import FileReader
 from Renderer import Renderer
@@ -23,10 +21,10 @@ class Window:
         self.width, self.height = self.config['client']['display_width'], self.config['client']['display_height']
         self.page_width, self.page_height = self.file_object['profile']['page_width'], self.file_object['profile']['page_height']
 
-        self.padding = 5
+        self.padding = 20
         self.pan_x, self.pan_y = self.file_object['session']['x_offset'], self.file_object['session']['y_offset']
         self.scale = self.file_object['session']['scale']
-        self.pad_step = 60
+        self.pad_step = 180
 
         self.surface = pygame.display.set_mode((self.width, self.height))
 
@@ -73,7 +71,11 @@ class Window:
                     print(f'operation is: {operation}')
                     for pen_number in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
                         if operation == f'select_pen_{pen_number}':
-                            self.current_pen = (pen_number-1) % 10
+                            if pen_number < len(self.file_object['profile']['pen_profiles']):
+                                self.current_pen = pen_number
+                                print(f'current pen: {self.current_pen}')
+                            else:
+                                print(f'pen {pen_number} does not exist')
                     # panning (with bounds)
                     if operation == 'pan_left':
                         self.pan_x = min(max(self.pan_x + self.pad_step, self.width - self.scale*self.page_width - self.padding), self.padding)
@@ -110,10 +112,8 @@ class Window:
                         ))
                     need_velo = True
                 self.frame = (self.frame+1) % self.record_interval
-            frame_time = time.time()
-            self.surface.blit(self.renderer.render_page(self.current_page['strokes'], (self.page_width, self.page_height),
-                                      self.pan_x, self.pan_y, self.scale), (0, 0))
-            print(f'time taken for rendering [ms]: {(time.time()-frame_time)*1000}')
+            self.surface.blit(self.renderer.render_page(self.current_page['strokes'], self.file_object['profile'],
+                (self.page_width, self.page_height), self.pan_x, self.pan_y, self.scale), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.FPS)
         

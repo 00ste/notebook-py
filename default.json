@@ -61,23 +61,23 @@
             },
             {
                 "color": "#FFFF00",
-                "width": 10,
+                "width": 25,
                 "alpha": 0.3
             },
             {
                 "color": "#00FF00",
-                "width": 10,
+                "width": 25,
                 "alpha": 0.3
             },
             {
                 "color": "#00FFFF",
-                "width": 10,
+                "width": 25,
                 "alpha": 0.3
             },
             {
                 "color": "#FF00FF",
-                "width": 10,
-                "alpha": 1.0
+                "width": 25,
+                "alpha": 0.3
             }
         ]
     }
