@@ -11,9 +11,9 @@ class Window:
         pygame.init()
         # read note file
         self.opened_file_path = opened_file_path
-        self.file_object = FileReader.read_note_file(self.opened_file_path)
+        self.file_object = FileReader.read_notebook(self.opened_file_path)
         # read config file
-        self.config = FileReader.read_config_file(FileReader.user_config)
+        self.config = FileReader.read_client_config(FileReader.client_config)
 
         # some aliases for commonly used variables
         self.current_page = self.file_object['pages'][self.file_object['session']['page']]
@@ -154,7 +154,7 @@ class Window:
                         pygame.display.set_caption(title=f'{self.opened_file_path.split("/")[-1]} - pynotes')
                         print('saving...')
                         if self.opened_file_path != '':
-                            FileReader.write_to_note_file(self.opened_file_path, self.file_object)   
+                            FileReader.write_notebook(self.opened_file_path, self.file_object)   
                      
             # RECORD VELOCITY POINT FIRST (EVEN IF NOT RECORDING TO GUARANTEE THAT EVERY POSITION POINT
             # GETS A RESPECTIVE VELOCITY POINT)
